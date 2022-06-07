@@ -2,6 +2,7 @@
 #include "Walnut/EntryPoint.h"
 
 #include "Walnut/Image.h"
+#include "Walnut/Random.h"
 
 using namespace Walnut;
 
@@ -41,7 +42,8 @@ public:
 
 		for (uint32_t i = 0; i < m_ViewportWidth * m_ViewportHeight; i++)
 		{
-			m_ImageData[i] = 0xffff00ff;
+			m_ImageData[i] = Random::UInt();
+			m_ImageData[i] |=0xff000000;
 		}
 
 		m_Image->SetData(m_ImageData);

@@ -49,7 +49,7 @@ uint32_t Renderer::GetPixelColor(glm::vec2 coordinate)
 {
 	glm::vec3 rayOrigin = glm::vec3(0.0f, 0.0f, 2.0f);
 	glm::vec3 rayDirection = glm::vec3(coordinate.x, coordinate.y, -1.0f);
-	float sphereRadius = 0.5f;
+	float sphereRadius = 1.0f;
 	glm::vec3 sphereOrigin = glm::vec3(0, 0, 0);
 	glm::vec3 lightdir = glm::vec3(2, -2, -2);
 	lightdir = glm::normalize(lightdir);
@@ -78,8 +78,8 @@ uint32_t Renderer::GetPixelColor(glm::vec2 coordinate)
 			float lightIntensity = glm::max(glm::dot(normal, -lightdir),0.0f);
 			uint32_t pixelColor = 0;
 			float alpha = 255;
-			float red = lightIntensity*128;
-			float green = lightIntensity* 128;
+			float red = lightIntensity * 128;
+			float green = lightIntensity * 128;
 			float blue = lightIntensity * 128;
 			pixelColor |= (int8_t)alpha << 24;
 			pixelColor |= (int8_t)red << 16;
@@ -91,5 +91,5 @@ uint32_t Renderer::GetPixelColor(glm::vec2 coordinate)
 		
 	}
 
-	return 0xff777777;
+	return 0xff330036;
 }

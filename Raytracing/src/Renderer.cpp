@@ -2,6 +2,21 @@
 
 #include "Walnut/Random.h"
 
+namespace Utils
+{
+	static uint32_t ConvertToRGBA(const glm::vec4& color)
+	{
+		
+		uint8_t r (color.r * 255.0f);
+		uint8_t g (color.g * 255.0f);
+		uint8_t b (color.b * 255.0f);
+		uint8_t a (color.a * 255.0f);
+
+		uint32_t result = (a << 24) | (b << 16) | (g << 8) | r;
+		return result;
+	}
+}
+
 void Renderer::Render()
 {
 	float aspectRatio = m_FinalImage->GetWidth() / (float)m_FinalImage->GetHeight();
@@ -11,7 +26,10 @@ void Renderer::Render()
 			glm::vec2 coordinate = { (float)x / (float)m_FinalImage->GetWidth(), (float)y / (float)m_FinalImage->GetHeight() };
 			coordinate = coordinate * 2.0f - 1.0f;
 			coordinate.x *= aspectRatio;
-			m_ImageData[x+y * m_FinalImage->GetWidth()] = GetPixelColor(coordinate);
+
+			glm::vec4 color = GetPixelColor(coordinate);
+			color = glm::clamp(color, glm::vec4(0.0f), glm::vec4(1.0f));
+			m_ImageData[x+y * m_FinalImage->GetWidth()] = Utils::ConvertToRGBA(color);
 		}
 	}
 	
@@ -45,13 +63,13 @@ std::shared_ptr<Walnut::Image> Renderer::GetFinalImage()
 	return m_FinalImage;
 }
 
-uint32_t Renderer::GetPixelColor(glm::vec2 coordinate)
+glm::vec4 Renderer::GetPixelColor(glm::vec2 coordinate)
 {
 	glm::vec3 rayOrigin = glm::vec3(0.0f, 0.0f, 2.0f);
 	glm::vec3 rayDirection = glm::vec3(coordinate.x, coordinate.y, -1.0f);
 	float sphereRadius = 1.0f;
 	glm::vec3 sphereOrigin = glm::vec3(0, 0, 0);
-	glm::vec3 lightdir = glm::vec3(2, -2, -2);
+	glm::vec3 lightdir = glm::vec3(-1, -1, -1);
 	lightdir = glm::normalize(lightdir);
 
 	float a = glm::dot(rayDirection, rayDirection);
@@ -62,34 +80,24 @@ uint32_t Renderer::GetPixelColor(glm::vec2 coordinate)
 	//b^2-4ac
 	float discriminant = b * b - 4.0f * a * c;
 
-	if (discriminant >= 0) 
+	if (discriminant < 0)
 	{
-		float t[] = 
-		{
-			(-b - glm::sqrt(discriminant)) / (2.0f * a),
-			(-b + glm::sqrt(discriminant)) / (2.0f * a)
-		};
-		for (int i = 0; i < 2; i++)
-		{
-			glm::vec3 hitPosition = rayOrigin + rayDirection * t[i];
-			glm::vec3 normal = hitPosition - sphereOrigin;
-			normal = glm::normalize(normal);
-
-			float lightIntensity = glm::max(glm::dot(normal, -lightdir),0.0f);
-			uint32_t pixelColor = 0;
-			float alpha = 255;
-			float red = lightIntensity * 128;
-			float green = lightIntensity * 128;
-			float blue = lightIntensity * 128;
-			pixelColor |= (int8_t)alpha << 24;
-			pixelColor |= (int8_t)red << 16;
-			pixelColor |= (int8_t)green << 8;
-			pixelColor |= (int8_t)blue;
-			return pixelColor;
-		}
-			
-		
+		return glm::vec4(0.4f, 0, 0.4f, 1);
 	}
 
-	return 0xff330036;
+	float t[] = 
+	{
+		(-b - glm::sqrt(discriminant)) / (2.0f * a),
+		(-b + glm::sqrt(discriminant)) / (2.0f * a)
+	};
+	for (int i = 0; i < 2; i++)
+	{
+		glm::vec3 hitPosition = rayOrigin + rayDirection * t[i];
+		glm::vec3 normal = hitPosition - sphereOrigin;
+		normal = glm::normalize(normal);
+
+		float lightIntensity = glm::max(glm::dot(normal, -lightdir), 0.0f);
+		glm::vec3 spherecolor = glm::vec3(lightIntensity);
+		return glm::vec4(spherecolor * normal, 1);
+	}
 }

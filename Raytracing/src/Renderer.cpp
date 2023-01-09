@@ -44,7 +44,7 @@ glm::vec4 Renderer::PerPixel(uint32_t x, uint32_t y)
 	glm::vec3 finalColor = glm::vec3(0.0f);
 	float multiplier = 1.0f;
 
-	int bounces = 1;
+	int bounces = 2;
 	for (size_t i = 0; i < bounces; i++)
 	{
 		Renderer::HitPayload payload = TraceRay(ray);
